@@ -1,4 +1,6 @@
 import React from "react";
+import axios from "axios";
+axios.defaults.withCredentials = true;
 import Navbar from "./components/Navbar";
 import MainBanner from "./components/MainBanner";
 import Home from "./pages/Home";
@@ -20,6 +22,7 @@ import AddProduct from "./pages/seller/AddProduct";
 import Orders from "./pages/seller/Orders";
 
 const App = () => {
+  
   const isSellerPath = useLocation().pathname.includes("seller");
   const { isSeller, showUserLogin } = useAppContext();
   return (
