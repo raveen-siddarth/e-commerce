@@ -70,7 +70,7 @@ export const login = async (req,res)=>{
             httpOnly: true, //prevent js to access the cookie
             secure: true, //use secure cookie in production
             sameSite:  "none", //CSRF protection
-          maxAge: 7 *24 *60 *60 *1000,
+             maxAge: 7 *24 *60 *60 *1000,
 
         })
 
@@ -85,19 +85,24 @@ export const login = async (req,res)=>{
 
 //check autherization : /api/user/is-auth
 
-export const isAuth = async (req,res)=>{
+export const isAuth = async (req, res) => {
     try {
-        const {userId} = req.body;
-
-        const user = await User.findById(userId).select("-password")
-        return res.json({success: true, user})
-
+      const userId = req.userId;
+  
+      const user = await User.findById(userId).select("-password");
+  
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+  
+      return res.json({ success: true, user });
+  
     } catch (error) {
-        console.log(error.message);
-        res.json({success: false, message: error.message});
-        
+      console.log(error.message);
+      res.status(500).json({ success: false, message: error.message });
     }
-}
+  };
+  
 
 //check autherization : /api/user/logout
 
