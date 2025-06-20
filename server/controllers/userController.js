@@ -29,8 +29,8 @@ import jwt from "jsonwebtoken"
 
           res.cookie('token', token, {
             httpOnly: true, //prevent js to access the cookie
-            secure: process.env.NODE_ENV === 'production', //use secure cookie in production
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', //CSRF protection
+            secure: true, //use secure cookie in production
+            sameSite:  "none", //CSRF protection
             maxAge: 7 *24 *60 *60 *1000,
 
           })
@@ -67,9 +67,9 @@ export const login = async (req,res)=>{
         const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: "7d"});
 
         res.cookie('token', token, {
-          httpOnly: true, //prevent js to access the cookie
-          secure: process.env.NODE_ENV === 'production', //use secure cookie in production
-          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', //CSRF protection
+            httpOnly: true, //prevent js to access the cookie
+            secure: true, //use secure cookie in production
+            sameSite:  "none", //CSRF protection
           maxAge: 7 *24 *60 *60 *1000,
 
         })
@@ -105,8 +105,8 @@ export const logout = async (req,res)=>{
     try {
         res.clearCookie('token', {
             httpOnly: true, //prevent js to access the cookie
-            secure: process.env.NODE_ENV === 'production', //use secure cookie in production
-          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', //CSRF protection
+            secure: true, //use secure cookie in production
+            sameSite:  "none", //CSRF protection
         })
 
         return res.json({success: true, message:"logged out"})
