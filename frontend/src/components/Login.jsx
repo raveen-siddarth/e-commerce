@@ -16,6 +16,8 @@ const Login = () => {
 
       const { data } = await axios.post(`/api/user/${state}`, {
         name, email, password
+      },  {
+        withCredentials: true,
       })
     
       if (data.success) {
