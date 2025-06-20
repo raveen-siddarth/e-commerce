@@ -11,8 +11,8 @@ export const sellerLogin = async (req, res) => {
         
         res.cookie('sellerToken', token, {
             httpOnly: true, //prevent js to access the cookie
-            secure: process.env.NODE_ENV === 'production', //use secure cookie in production
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', //CSRF protection
+            secure: true, //use secure cookie in production
+            sameSite:  "none", //CSRF protection
             maxAge: 7 *24 *60 *60 *1000,
 
         });
