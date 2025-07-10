@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useRef, useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { dummyProducts } from "../assets/assets";
 import toast from "react-hot-toast";
@@ -18,86 +18,98 @@ export const AppContextProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState({});
   const [searchQuery, setSearchQuery] = useState({});
+  const isInitialCartLoad = useRef(true);
 
   ///featch seller status
   const featchSeller = async () => {
     try {
-      const { data } = await axios.get('/api/seller/is-auth');
+      const { data } = await axios.get("/api/seller/is-auth");
       if (data.success) {
         setIsSeller(true);
       } else {
         setIsSeller(false);
-        
-        
       }
     } catch (error) {
-      setIsSeller(false)
+      setIsSeller(false);
       console.log(error.message);
-      
     }
   };
 
   //featch userauth statues ,User data and cart items
   const fetchUser = async () => {
     try {
-      const { data } = await axios.get('/api/user/is-auth') ;
-      if(data.success){
-        setUser(data.user)
-        setCartItems(data.user.cartItems)
+      const { data } = await axios.get("/api/user/is-auth");
+      if (data.success) {
+        setUser(data.user);
+        setCartItems(data.user.cartItems);
       }
     } catch (error) {
-      setUser(null)
+      setUser(null);
     }
-  }
+  };
 
   // fetch all Product
   const fetchProducts = async () => {
     try {
-      const { data } = await axios.get('/api/product/list')
-      if(data.success){
-        setProducts(data.products)
-      }else{
-        toast.product(data.message)
+      const { data } = await axios.get("/api/product/list");
+      if (data.success) {
+        setProducts(data.products);
+      } else {
+        toast.product(data.message);
       }
     } catch (error) {
-      toast.product(error.message)
+      toast.product(error.message);
     }
   };
 
   useEffect(() => {
-    fetchUser()
+    fetchUser();
     featchSeller();
     fetchProducts();
-    
   }, []);
 
-  useEffect(()=>{
-    const updateCart = async ()=>{
-      try {
-        const {data} = await axios.post('/api/cart/update', {cartItems})
-        if(!data.success){
-          toast.error(data.message)
-        }
-      } catch (error) {
-        toast.error(error.message)
-      }
+  //update database cart items
+
+  useEffect(() => {
+    if (isInitialCartLoad.current) {
+      isInitialCartLoad.current = false;
+      return; //  Skip first update
     }
 
+    const updateCart = async () => {
+      try {
+        const { data } = await axios.post("/api/cart/update", { cartItems });
+        if (data.success) {
+          toast.success(data.message);
+          // console.log("Sending cartItems to DB:", cartItems);
+        } else {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        toast.error(error.message);
+      }
+    };
+
     if (user) {
-      updateCart() 
+      updateCart();
     }
-  }, [cartItems])
+  }, [cartItems]);
   // add product to cart
   const addToCart = (itemId) => {
     let cartData = structuredClone(cartItems);
 
-    if (cartData[itemId]) {
-      cartData[itemId] += 1;
-    } else {
-      cartData[itemId] = 1;
+    try {
+      if (cartData[itemId]) {
+        cartData[itemId] += 1;
+      } else {
+        cartData[itemId] = 1;
+      }
+      setCartItems(cartData);
+      toast.success("added to cart");
+      // console.log(cartItems);
+    } catch (error) {
+      console.log(error.message);
     }
-    setCartItems(cartData);
-    toast.success("added to cart");
   };
   //update cart item qualuty
   const updateCartItem = (itemId, quantity) => {
@@ -157,8 +169,7 @@ export const AppContextProvider = ({ children }) => {
     getCartCount,
     axios,
     fetchProducts,
-    setCartItems
-
+    setCartItems,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

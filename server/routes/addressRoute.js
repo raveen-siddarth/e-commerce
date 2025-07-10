@@ -7,4 +7,4 @@ const addressRouter = express.Router()
 addressRouter.get("/get", authUser , getAddress)
 addressRouter.post("/add", authUser , addAddress)
 
-export default addressRouter
+export default addressRouter 

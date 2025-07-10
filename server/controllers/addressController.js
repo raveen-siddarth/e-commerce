@@ -24,11 +24,12 @@ export const addAddress = async (req, res) => {
 export const getAddress = async (req, res) => {
 
     try {
-        const {userId} = req.body
+        // const { userId } = req.body;
+        const userId = req.userId;
         const addresses = await Address.find({userId})
         res.json({success : true , addresses})
     } catch (error) {
-        console.log(error.message);
+        console.log(`error in getAddress:${error.message}`);
         res.json({success : false , message: error.message})
         
     }
