@@ -22,7 +22,7 @@ await connectCloudinary()
 
 
 //allow orgins
-const allowedOrgins = ['https://e-commerce-ivory-seven-18.vercel.app', 'http://localhost:5173' ]
+const allowedOrgins = ['https://frontend-f4tv.onrender.com/','https://e-commerce-ivory-seven-18.vercel.app', 'http://localhost:5173' ]
 
 //middleware configration
 
