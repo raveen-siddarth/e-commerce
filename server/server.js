@@ -14,10 +14,22 @@ import orderRouter from "./routes/orderRoute.js";
 
 
 const app = express();
-const port = process.env.PORT || "4000";
+const port = process.env.PORT || 4000;
 
-await connectDB();
-await connectCloudinary()
+const startServer = async () => {
+  try {
+    await connectDB();
+    await connectCloudinary();
+
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
+
+  } catch (error) {
+    console.error("Server failed:", error);
+  }
+};
+
 
 
 
@@ -43,6 +55,5 @@ app.use('/api/cart', cartRouter)
 app.use('/api/address', addressRouter)
 app.use('/api/order', orderRouter)
 
-app.listen(port, ()=>{
-    console.log(`Server is running on http://localhost:${port}`)
-})
+
+startServer();
