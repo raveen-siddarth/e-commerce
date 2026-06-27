@@ -1,1 +1,16 @@
+name: Keep Backend Alive
 
+on:
+  schedule:
+    - cron: "0 12 * * *"
+
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Visit Backend
+        run: |
+          curl https://grosery-backend.onrender.com/products/fruits
