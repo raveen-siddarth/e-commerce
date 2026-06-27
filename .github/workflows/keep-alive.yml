@@ -13,4 +13,4 @@ jobs:
     steps:
       - name: Visit Backend
         run: |
-          curl https://grosery-backend.onrender.com/products/fruits
+          curl https://grosery-backend.onrender.com/api/product/list
