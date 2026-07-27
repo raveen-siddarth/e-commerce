@@ -60,45 +60,75 @@ export const AppContextProvider = ({ children }) => {
     }
   }, [sellerToken]);
 
-  ///featch seller status
+  // Track whether user auth check is still in progress
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+
+  // Helper: sleep for ms milliseconds
+  const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
+  ///featch seller status - with retry for cold start
   const featchSeller = async () => {
-    try {
-      const { data } = await axios.get("/api/seller/is-auth");
-      if (data.success) {
-        setIsSeller(true);
-      } else {
+    const maxRetries = 3;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const { data } = await axios.get("/api/seller/is-auth");
+        if (data.success) {
+          setIsSeller(true);
+        } else {
+          setIsSeller(false);
+        }
+        return; // success, exit retry loop
+      } catch (error) {
         setIsSeller(false);
+        if (attempt < maxRetries) {
+          await sleep(attempt * 2000); // wait 2s, 4s before retrying
+        }
       }
-    } catch (error) {
-      setIsSeller(false);
-      console.log(error.message);
     }
   };
 
-  //featch userauth statues ,User data and cart items
+  // fetchUser with retry - handles Render cold start (backend sleeping)
   const fetchUser = async () => {
-    try {
-      const { data } = await axios.get("/api/user/is-auth");
-      if (data.success) {
-        setUser(data.user);
-        setCartItems(data.user.cartItems);
+    const maxRetries = 4;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const { data } = await axios.get("/api/user/is-auth");
+        if (data.success) {
+          setUser(data.user);
+          setCartItems(data.user.cartItems);
+        } else {
+          setUser(null);
+        }
+        setIsAuthLoading(false);
+        return; // success, exit
+      } catch (error) {
+        if (attempt < maxRetries) {
+          // exponential backoff: 2s, 4s, 8s
+          await sleep(attempt * 2000);
+        } else {
+          // All retries exhausted
+          setUser(null);
+          setIsAuthLoading(false);
+        }
       }
-    } catch (error) {
-      setUser(null);
     }
   };
 
-  // fetch all Product
+  // fetch all Product - with silent retry
   const fetchProducts = async () => {
-    try {
-      const { data } = await axios.get("/api/product/list");
-      if (data.success) {
-        setProducts(data.products);
-      } else {
-        toast.product(data.message);
+    const maxRetries = 3;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const { data } = await axios.get("/api/product/list");
+        if (data.success) {
+          setProducts(data.products);
+          return;
+        }
+      } catch (error) {
+        if (attempt < maxRetries) {
+          await sleep(attempt * 2000);
+        }
       }
-    } catch (error) {
-      toast.product(error.message);
     }
   };
 
@@ -106,7 +136,15 @@ export const AppContextProvider = ({ children }) => {
     fetchUser();
     featchSeller();
     fetchProducts();
+
+    // Keep backend awake: ping every 10 minutes to prevent Render cold starts
+    const keepAliveInterval = setInterval(() => {
+      axios.get("/").catch(() => {}); // silent ping to root endpoint
+    }, 10 * 60 * 1000);
+
+    return () => clearInterval(keepAliveInterval);
   }, []);
+
 
   //update database cart items
 
@@ -214,6 +252,7 @@ export const AppContextProvider = ({ children }) => {
     setToken,
     sellerToken,
     setSellerToken,
+    isAuthLoading,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

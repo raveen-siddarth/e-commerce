@@ -24,7 +24,18 @@ import Orders from "./pages/seller/Orders";
 const App = () => {
   
   const isSellerPath = useLocation().pathname.includes("seller");
-  const { isSeller, showUserLogin } = useAppContext();
+  const { isSeller, showUserLogin, isAuthLoading } = useAppContext();
+
+  // Show a loading screen while backend wakes up (Render cold start)
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4">
+        <div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-gray-400 text-sm">Loading, please wait…</p>
+      </div>
+    );
+  }
+
   return (
     <div className="text-default min-h-screen text-gray-700 bg-white">
       {isSellerPath ? null : <Navbar />}
