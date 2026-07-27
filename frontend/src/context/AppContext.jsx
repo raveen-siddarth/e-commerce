@@ -20,45 +20,45 @@ export const AppContextProvider = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState({});
   const isInitialCartLoad = useRef(true);
 
-  const [token, setToken] = useState(localStorage.getItem("token") || "");
-  const [sellerToken, setSellerToken] = useState(localStorage.getItem("sellerToken") || "");
+  const [token, setToken] = useState(() => {
+    const savedToken = localStorage.getItem("token") || "";
+    // Set header immediately at initialization — before any useEffect fires
+    if (savedToken) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
+    }
+    return savedToken;
+  });
 
-  // Sync token with localStorage
+  const [sellerToken, setSellerToken] = useState(() => {
+    const savedSellerToken = localStorage.getItem("sellerToken") || "";
+    // Set header immediately at initialization — before any useEffect fires
+    if (savedSellerToken) {
+      axios.defaults.headers.common["x-seller-token"] = savedSellerToken;
+    }
+    return savedSellerToken;
+  });
+
+  // Sync token with localStorage and axios defaults when it changes
   useEffect(() => {
     if (token) {
       localStorage.setItem("token", token);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     } else {
       localStorage.removeItem("token");
+      delete axios.defaults.headers.common["Authorization"];
     }
   }, [token]);
 
-  // Sync sellerToken with localStorage
+  // Sync sellerToken with localStorage and axios defaults when it changes
   useEffect(() => {
     if (sellerToken) {
       localStorage.setItem("sellerToken", sellerToken);
+      axios.defaults.headers.common["x-seller-token"] = sellerToken;
     } else {
       localStorage.removeItem("sellerToken");
+      delete axios.defaults.headers.common["x-seller-token"];
     }
   }, [sellerToken]);
-
-  // Request interceptor to automatically set headers
-  useEffect(() => {
-    const interceptor = axios.interceptors.request.use(
-      (config) => {
-        if (token) {
-          config.headers["Authorization"] = `Bearer ${token}`;
-        }
-        if (sellerToken) {
-          config.headers["x-seller-token"] = sellerToken;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-    return () => {
-      axios.interceptors.request.eject(interceptor);
-    };
-  }, [token, sellerToken]);
 
   ///featch seller status
   const featchSeller = async () => {
