@@ -17,7 +17,7 @@ export const sellerLogin = async (req, res) => {
 
         });
 
-        return res.json({success: true, message: "logged in"});
+        return res.json({success: true, message: "logged in", token});
     }else{
         return res.json({success: false, message: "invalid credentials"});
     }

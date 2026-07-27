@@ -8,6 +8,7 @@ const Navbar = () => {
   const {
     user,
     setUser,
+    setToken,
     setShowUserLogin,
     navigate,
     searchQuery,
@@ -22,6 +23,7 @@ const Navbar = () => {
       if (data.success) {
         toast.success(data.message)
         setUser(null);
+        setToken("");
         navigate("/");
       } else {
         toast.error(data.message)

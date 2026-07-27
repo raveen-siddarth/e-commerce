@@ -20,6 +20,46 @@ export const AppContextProvider = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState({});
   const isInitialCartLoad = useRef(true);
 
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [sellerToken, setSellerToken] = useState(localStorage.getItem("sellerToken") || "");
+
+  // Sync token with localStorage
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("token", token);
+    } else {
+      localStorage.removeItem("token");
+    }
+  }, [token]);
+
+  // Sync sellerToken with localStorage
+  useEffect(() => {
+    if (sellerToken) {
+      localStorage.setItem("sellerToken", sellerToken);
+    } else {
+      localStorage.removeItem("sellerToken");
+    }
+  }, [sellerToken]);
+
+  // Request interceptor to automatically set headers
+  useEffect(() => {
+    const interceptor = axios.interceptors.request.use(
+      (config) => {
+        if (token) {
+          config.headers["Authorization"] = `Bearer ${token}`;
+        }
+        if (sellerToken) {
+          config.headers["x-seller-token"] = sellerToken;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+    return () => {
+      axios.interceptors.request.eject(interceptor);
+    };
+  }, [token, sellerToken]);
+
   ///featch seller status
   const featchSeller = async () => {
     try {
@@ -170,6 +210,10 @@ export const AppContextProvider = ({ children }) => {
     axios,
     fetchProducts,
     setCartItems,
+    token,
+    setToken,
+    sellerToken,
+    setSellerToken,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

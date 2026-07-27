@@ -5,7 +5,7 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const SellerLayout = () => {
-  const { isSeller, setIsSeller, axios, navigate } = useAppContext();
+  const { isSeller, setIsSeller, setSellerToken, axios, navigate } = useAppContext();
 
   const sidebarLinks = [
     { name: "Add Products", path: "/seller", icon: assets.add_icon },
@@ -22,6 +22,8 @@ const SellerLayout = () => {
       const { data } = await axios.get("/api/seller/logout");
       if (data.success) {
         toast.success(data.message);
+        setIsSeller(false);
+        setSellerToken("");
         navigate("/");
       } else {
         toast.error(data.message);
